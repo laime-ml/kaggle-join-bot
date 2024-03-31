@@ -42,7 +42,7 @@
 ### 実行方法
 
 ```
-rye run rye run python src/main.py
+rye run python src/main.py
 ```
 
 ## デプロイ
