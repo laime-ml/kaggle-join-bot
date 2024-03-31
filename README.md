@@ -41,3 +41,8 @@ rye run rye run python src/main.py
 ## デプロイ
 
 heroku 上にデプロイ
+
+- requirements.txt を出力
+  ```
+  rye run pip freeze > requirements.txt
+  ```

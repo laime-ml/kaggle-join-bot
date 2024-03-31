@@ -241,7 +241,6 @@ rpds-py==0.18.0
 rsa==4.9
     # via google-auth
 ruff==0.3.4
-    # via kaggle-join-bot
 selenium==4.19.0
     # via kaggle-join-bot
 send2trash==1.8.2
