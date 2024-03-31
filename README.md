@@ -24,6 +24,7 @@
   SPREADSHEET_NAME_1=KaggleRankCurrent
 
   SLACK_TOKEN=xxxx
+  SLACK_CHANNEL=xxx
 
   # kaggle api 用
   KAGGLE_USERNAME=xxx
