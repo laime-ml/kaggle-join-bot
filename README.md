@@ -4,21 +4,26 @@
 
 - runtime.txt: heroku 用
 - requirements.txt: heroku 用
-
-- .env: ローカル用。クレデンシャルの環境変数を設定
+- .env: 追加の環境変数の設定。
 
 ## 準備
 
-- スプレッドシートにアクセスするための API キーを発行
-  - LAIME アカウントの GCP から
-- 環境変数の設定
+- スプレッドシートにアクセスするための API キーを発行(LAIME アカウントの GCP から)
+- .env に環境変数の設定
+
   ```
-  SHEET_PROJECT_ID
-  SHEET_PRIVATE_KEY_ID
-  SHEET_PRIVATE_KEY
-  SHEET_CLIENT_EMAIL
-  SHEET_CLIENT_ID
-  SHEET_CLIENT_X509_CERT_URL
+  # apiキーの
+  SHEET_PROJECT_ID=xxx
+  SHEET_PRIVATE_KEY_ID=xxx
+  SHEET_PRIVATE_KEY=xxx
+  SHEET_CLIENT_EMAIL=xxx
+  SHEET_CLIENT_ID=xxx
+  SHEET_CLIENT_X509_CERT_URL=xxx
+
+  SPREADSHEET_KEY={LAIMEランキングスプレッドシートのURLに記載のID}
+  SPREADSHEET_NAME_1=KaggleRankCurrent
+
+  SLACK_TOKEN=xxxx
   ```
 
 ## ローカル環境構築

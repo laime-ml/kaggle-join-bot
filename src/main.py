@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 
 from local import load_env
-from spreadsheet import extract_spreadsheet
+from spreadsheet import fetch_account_ids_from_spreadsheet
 
 # ロギングの設定
 logging.basicConfig(
@@ -18,12 +18,8 @@ logging.basicConfig(
 
 def main():
     load_env()
-    print(os.environ["SHEET_PROJECT_ID"])
-    # スプレッドシートから名前リストを取得
-
-
-#    name_list = extract_spreadsheet()
-#   print(name_list)
+    name_list = fetch_account_ids_from_spreadsheet()
+    print(name_list)
 
 
 if __name__ == "__main__":

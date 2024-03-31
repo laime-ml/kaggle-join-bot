@@ -5,12 +5,9 @@ import numpy as np
 from google.oauth2 import service_account
 
 
-def extract_spreadsheet():
-    """_summary_
+def fetch_account_ids_from_spreadsheet() -> list[str]:
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-    Returns:
-        _type_: _description_
-    """
     # 辞書オブジェクト。認証に必要な情報をHerokuの環境変数から呼び出している
     json_acct_info = {
         "type": "service_account",
@@ -25,7 +22,7 @@ def extract_spreadsheet():
         "client_x509_cert_url": os.environ["SHEET_CLIENT_X509_CERT_URL"],
     }
 
-    credentials = service_account.Credentials.from_service_account_info(json_acct_info)
+    credentials = service_account.Credentials.from_service_account_info(json_acct_info, scopes=scope)
     client = gspread.authorize(credentials)
 
     # 共有設定したスプレッドシートの1枚目のシートを開く
