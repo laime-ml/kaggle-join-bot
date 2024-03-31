@@ -55,6 +55,8 @@ pysocks==1.7.1
     # via urllib3
 python-dateutil==2.9.0.post0
     # via kaggle
+python-dotenv==1.0.1
+    # via kaggle-join-bot
 python-slugify==8.0.4
     # via kaggle
 requests==2.31.0

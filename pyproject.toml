@@ -14,6 +14,7 @@ dependencies = [
     "gspread>=6.1.0",
     "google-auth>=2.29.0",
     "ruff>=0.3.4",
+    "python-dotenv>=1.0.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -33,3 +34,7 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kaggle_join_bot"]
+
+# ruff の設定
+[tool.ruff]
+line-length = 119

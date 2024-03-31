@@ -207,6 +207,8 @@ python-dateutil==2.9.0.post0
     # via arrow
     # via jupyter-client
     # via kaggle
+python-dotenv==1.0.1
+    # via kaggle-join-bot
 python-json-logger==2.0.7
     # via jupyter-events
 python-slugify==8.0.4

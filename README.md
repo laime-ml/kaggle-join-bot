@@ -5,10 +5,21 @@
 - runtime.txt: heroku 用
 - requirements.txt: heroku 用
 
+- .env: ローカル用。クレデンシャルの環境変数を設定
+
 ## 準備
 
 - スプレッドシートにアクセスするための API キーを発行
   - LAIME アカウントの GCP から
+- 環境変数の設定
+  ```
+  SHEET_PROJECT_ID
+  SHEET_PRIVATE_KEY_ID
+  SHEET_PRIVATE_KEY
+  SHEET_CLIENT_EMAIL
+  SHEET_CLIENT_ID
+  SHEET_CLIENT_X509_CERT_URL
+  ```
 
 ## ローカル環境構築
 
