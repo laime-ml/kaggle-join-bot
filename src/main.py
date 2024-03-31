@@ -21,6 +21,9 @@ def main():
     name_list = fetch_account_ids_from_spreadsheet()
     print(name_list)
 
+    channel = os.getenv("SLACK_CHANNEL", "30_kaggle共有")
+    print(channel)
+
 
 if __name__ == "__main__":
     main()
