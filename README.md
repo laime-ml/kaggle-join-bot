@@ -24,6 +24,13 @@
   SPREADSHEET_NAME_1=KaggleRankCurrent
 
   SLACK_TOKEN=xxxx
+
+  # kaggle api 用
+  KAGGLE_USERNAME=xxx
+  KAGGLE_KEY=xxx
+
+  # 存在しない場合は "/app/.chromedriver/bin/chromedriver"
+  DRIVER_PATH=xxx/yyy
   ```
 
 ## ローカル環境構築
