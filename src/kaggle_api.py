@@ -3,13 +3,11 @@ import os
 from datetime import datetime
 from time import sleep
 
+from kaggle import KaggleApi
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from tqdm.auto import tqdm
-
-import kaggle
-from kaggle.api.kaggle_api_extended import KaggleApi
 
 
 def extract_kaggle(kaggleAccounts):
@@ -32,6 +30,7 @@ def extract_kaggle(kaggleAccounts):
         driver.get(URL)
         sleep(1)
         logs = driver.get_log("performance")
+        response = None
         for entry in logs:
             message_data = json.loads(entry["message"])["message"]["params"]
             # リクエスト情報が存在する場合のみ処理
@@ -47,6 +46,8 @@ def extract_kaggle(kaggleAccounts):
                         requestid = message_data["requestId"]
                         response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
                         break
+        if response is None:
+            continue
         response = response["body"]
         response = json.loads(response)
         if "documents" in response.keys():
@@ -63,7 +64,6 @@ def extract_kaggle(kaggleAccounts):
                 extract_dict[name].append(output)
             else:
                 extract_dict[name] = [output]
-        break
     return extract_dict
 
 

@@ -4,13 +4,13 @@ import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from kaggle import extract_competition, extract_kaggle
+from kaggle_api import extract_competition, extract_kaggle
 from local import load_env
 from spreadsheet import fetch_account_ids_from_spreadsheet
 
 # ロギングの設定
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[logging.StreamHandler()],  # logging.FileHandler("app.log"),
 )
@@ -51,6 +51,7 @@ def main():
         response = client.chat_postMessage(channel=channel, text=text)
         logger.info(response)
     except SlackApiError as e:
+        logger.error(e.response["error"])
         assert e.response["error"]
 
 
