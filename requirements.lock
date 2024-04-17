@@ -46,6 +46,8 @@ outcome==1.3.0.post0
     # via trio
 pip==24.0
     # via kaggle-join-bot
+polars==0.20.21
+    # via kaggle-join-bot
 pyasn1==0.6.0
     # via pyasn1-modules
     # via rsa
