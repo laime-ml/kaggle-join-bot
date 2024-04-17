@@ -1,16 +1,20 @@
 import json
+import logging
 import os
 from datetime import datetime
 from time import sleep
 
+import polars as pl
 from kaggle import KaggleApi
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from tqdm.auto import tqdm
 
+logger = logging.getLogger(__name__)
 
-def extract_kaggle(kaggleAccounts: list[str]):
+
+def extract_kaggle(kaggleAccounts: list[str]) -> (dict[str, list[str]], pl.DataFrame):
     driver_path = os.getenv("DRIVER_PATH", "/app/.chromedriver/bin/chromedriver")
     service = Service(executable_path=driver_path)
     options = Options()
@@ -20,17 +24,19 @@ def extract_kaggle(kaggleAccounts: list[str]):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(service=service, options=options)
-    driver.set_window_size(950, 800)
-    extract_dict = {}
+    driver.set_window_size(950, 800)  # 画面サイズを固定してメモリを節約
+    competition_title_to_rank_members = {}
+    competition_achievements = []
     for ka in tqdm(kaggleAccounts):
         URL = f"https://www.kaggle.com/{ka}/competitions"
         options = webdriver.ChromeOptions()
         options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
         driver = webdriver.Chrome(options=options)
         driver.get(URL)
-        sleep(1)
+        sleep(2)  # 通信環境によっては待ち時間が必要。logsが不完全になることがある
         logs = driver.get_log("performance")
         response = None
+        retry_cnt = 0
         for entry in logs:
             message_data = json.loads(entry["message"])["message"]["params"]
             # リクエスト情報が存在する場合のみ処理
@@ -45,37 +51,66 @@ def extract_kaggle(kaggleAccounts: list[str]):
                     list_type = post_data["filters"]["listType"]
                     # activeのみ表示
                     if list_type.find("ACTIVE") > 0:
+                        try:
+                            requestid = message_data["requestId"]
+                            response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
+                            response = response["body"]
+                            response = json.loads(response)
+                            if "documents" in response.keys():
+                                response = response["documents"]
+                                for res in response:
+                                    if "teamRank" in res["competitionDocument"].keys():
+                                        rank = res["competitionDocument"]["teamRank"]
+                                        name = res["title"]
+                                        output = f"{int(rank)}位@{ka}"
+                                    else:
+                                        name = res["title"]
+                                        output = f"順位なし@{ka}"
+                                    if name in competition_title_to_rank_members.keys():
+                                        competition_title_to_rank_members[name].append(output)
+                                    else:
+                                        competition_title_to_rank_members[name] = [output]
+                        except Exception as e:
+                            retry_cnt += 1
+                            if retry_cnt <= 3:
+                                sleep(retry_cnt * 3)
+                                logs.append(entry)
+                                logger.info(ka)
+                                logger.info("retry count: " + str(retry_cnt))
+                                logger.info("ListSearchContent")
+                                logger.info(e)
+                            else:
+                                logger.error(e)
+                # 現在のメダル数・tierを取得
+                if request_url == "https://www.kaggle.com/api/i/routing.RoutingService/GetPageDataByUrl":
+                    try:
+                        post_data = request_data["postData"]
+                        post_data = json.loads(post_data)
                         requestid = message_data["requestId"]
                         response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
                         response = response["body"]
                         response = json.loads(response)
-                        if "documents" in response.keys():
-                            response = response["documents"]
-                            for res in response:
-                                if "teamRank" in res["competitionDocument"].keys():
-                                    rank = res["competitionDocument"]["teamRank"]
-                                    name = res["title"]
-                                    output = f"{int(rank)}位@{ka}"
-                                else:
-                                    name = res["title"]
-                                    output = f"順位なし@{ka}"
-                                if name in extract_dict.keys():
-                                    extract_dict[name].append(output)
-                                else:
-                                    extract_dict[name] = [output]
-                # 現在のメダル数・tierを取得
-                if request_url == "https://www.kaggle.com/api/i/routing.RoutingService/GetPageDataByUrl":
-                    post_data = request_data["postData"]
-                    post_data = json.loads(post_data)
-                    requestid = message_data["requestId"]
-                    response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
-                    response = response["body"]
-                    response = json.loads(response)
-                    # 4つのtier情報がリストで格納されている
-                    achievementSummaries = response["userProfile"]["achievementSummaries"]
-                    competition_achievement = achievementSummaries[0]
-                    print(competition_achievement)
-    return extract_dict
+                        # 4つのtier情報がリストで格納されている
+                        achievementSummaries = response["userProfile"]["achievementSummaries"]
+                        competition_achievement = achievementSummaries[0]
+                        # e.g.) {'tier': 'MASTER', 'summaryType': 'USER_ACHIEVEMENT_TYPE_COMPETITIONS', 'rankPercentage': 0.00031350303, 'rankOutOf': 200955, 'rankCurrent': 63, 'rankHighest': 47, 'totalGoldMedals': 3, 'totalSilverMedals': 4, 'totalBronzeMedals': 3}
+                        competition_achievement["username"] = ka
+                        competition_achievements.append(competition_achievement)
+                    except Exception as e:
+                        retry_cnt += 1
+                        if retry_cnt <= 3:
+                            sleep(retry_cnt * 3)
+                            logs.append(entry)
+                            logger.info(ka)
+                            logger.info("retry count: " + str(retry_cnt))
+                            logger.info("GetPageDataByUrl")
+                            logger.info(e)
+                        else:
+                            logger.error(e)
+
+    driver.quit()
+    competition_achievements_df = pl.DataFrame(competition_achievements)
+    return competition_title_to_rank_members, competition_achievements_df
 
 
 def extract_competition():
