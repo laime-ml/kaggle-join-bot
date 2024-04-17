@@ -5,7 +5,7 @@ import numpy as np
 from google.oauth2 import service_account
 
 
-def fetch_account_ids_from_spreadsheet() -> list[str]:
+def get_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
     # 辞書オブジェクト。認証に必要な情報をHerokuの環境変数から呼び出している
@@ -24,12 +24,14 @@ def fetch_account_ids_from_spreadsheet() -> list[str]:
 
     credentials = service_account.Credentials.from_service_account_info(json_acct_info, scopes=scope)
     client = gspread.authorize(credentials)
+    return client
 
-    # 共有設定したスプレッドシートの1枚目のシートを開く
+
+def fetch_account_ids_from_spreadsheet() -> list[str]:
+    client = get_client()
     SpreadSheet = client.open_by_key(os.environ["SPREADSHEET_KEY"])
-    RawData = SpreadSheet.worksheet(os.environ["SPREADSHEET_NAME_1"])
-
+    RawData = SpreadSheet.worksheet("フォームの回答 1")
     data = RawData.get_all_values()
-    name_list = np.array(data)[:, 8][1:]
+    name_list = np.array(data)[:, 2][1:]
 
     return list(name_list)
