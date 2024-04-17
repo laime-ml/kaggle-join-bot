@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.service import Service
 from tqdm.auto import tqdm
 
 
-def extract_kaggle(kaggleAccounts):
+def extract_kaggle(kaggleAccounts: list[str]):
     driver_path = os.getenv("DRIVER_PATH", "/app/.chromedriver/bin/chromedriver")
     service = Service(executable_path=driver_path)
     options = Options()
@@ -37,6 +37,8 @@ def extract_kaggle(kaggleAccounts):
             if "request" in message_data:
                 request_data = message_data["request"]
                 request_url = request_data["url"]
+
+                # 参加中コンペの情報を取得
                 if request_url == "https://www.kaggle.com/api/i/search.SearchContentService/ListSearchContent":
                     post_data = request_data["postData"]
                     post_data = json.loads(post_data)
@@ -45,26 +47,34 @@ def extract_kaggle(kaggleAccounts):
                     if list_type.find("ACTIVE") > 0:
                         requestid = message_data["requestId"]
                         response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
-                        break
-        if response is None:
-            continue
-        response = response["body"]
-        response = json.loads(response)
-        if "documents" in response.keys():
-            response = response["documents"]
-            for res in response:
-                if "teamRank" in res["competitionDocument"].keys():
-                    rank = res["competitionDocument"]["teamRank"]
-                    name = res["title"]
-                    output = f"{int(rank)}位@{ka}"
-                else:
-                    name = res["title"]
-                    output = f"順位なし@{ka}"
-
-                if name in extract_dict.keys():
-                    extract_dict[name].append(output)
-                else:
-                    extract_dict[name] = [output]
+                        response = response["body"]
+                        response = json.loads(response)
+                        if "documents" in response.keys():
+                            response = response["documents"]
+                            for res in response:
+                                if "teamRank" in res["competitionDocument"].keys():
+                                    rank = res["competitionDocument"]["teamRank"]
+                                    name = res["title"]
+                                    output = f"{int(rank)}位@{ka}"
+                                else:
+                                    name = res["title"]
+                                    output = f"順位なし@{ka}"
+                                if name in extract_dict.keys():
+                                    extract_dict[name].append(output)
+                                else:
+                                    extract_dict[name] = [output]
+                # 現在のメダル数・tierを取得
+                if request_url == "https://www.kaggle.com/api/i/routing.RoutingService/GetPageDataByUrl":
+                    post_data = request_data["postData"]
+                    post_data = json.loads(post_data)
+                    requestid = message_data["requestId"]
+                    response = driver.execute_cdp_cmd("Network.getResponseBody", {"requestId": requestid})
+                    response = response["body"]
+                    response = json.loads(response)
+                    # 4つのtier情報がリストで格納されている
+                    achievementSummaries = response["userProfile"]["achievementSummaries"]
+                    competition_achievement = achievementSummaries[0]
+                    print(competition_achievement)
     return extract_dict
 
 
