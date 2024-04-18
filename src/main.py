@@ -2,10 +2,11 @@ import logging
 import os
 
 import polars as pl
-from kaggle_api import extract_competition, extract_kaggle
-from local import load_env
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+
+from kaggle_api import extract_competition, extract_kaggle
+from local import load_env
 from spreadsheet import fetch_account_ids_from_spreadsheet, update_laime_ranking
 
 # ロギングの設定
@@ -38,7 +39,7 @@ def main():
 
     # スプレッドシートからkaggleアカウントを取得
     kaggle_accounts = fetch_account_ids_from_spreadsheet()
-    # kaggle_accounts = kaggle_accounts[:5]
+    kaggle_accounts = kaggle_accounts[:5]
     logger.info(kaggle_accounts)
 
     # ChromeDriver, kaggle apiを使ってKaggleの情報を取得

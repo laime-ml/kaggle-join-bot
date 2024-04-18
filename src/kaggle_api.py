@@ -47,7 +47,10 @@ def extract_kaggle(kaggleAccounts: list[str]) -> (dict[str, list[str]], pl.DataF
                     request_url = request_data["url"]
 
                     # 参加中コンペの情報を取得
-                    if request_url == "https://www.kaggle.com/api/i/search.SearchContentService/ListSearchContent":
+                    if (
+                        not active_comp_flag
+                        and request_url == "https://www.kaggle.com/api/i/search.SearchContentService/ListSearchContent"
+                    ):
                         post_data = request_data["postData"]
                         post_data = json.loads(post_data)
                         list_type = post_data["filters"]["listType"]
@@ -78,7 +81,10 @@ def extract_kaggle(kaggleAccounts: list[str]) -> (dict[str, list[str]], pl.DataF
                                 logger.error(e)
                                 break
                     # 現在のメダル数・tierを取得
-                    if request_url == "https://www.kaggle.com/api/i/routing.RoutingService/GetPageDataByUrl":
+                    if (
+                        not achievements_flag
+                        and request_url == "https://www.kaggle.com/api/i/routing.RoutingService/GetPageDataByUrl"
+                    ):
                         try:
                             post_data = request_data["postData"]
                             post_data = json.loads(post_data)
@@ -107,7 +113,7 @@ def extract_kaggle(kaggleAccounts: list[str]) -> (dict[str, list[str]], pl.DataF
             logger.error(f"not achievements_flag: {ka}")
 
     driver.quit()
-    competition_achievements_df = pl.DataFrame(competition_achievements)
+    competition_achievements_df = pl.DataFrame(competition_achievements).unique(subset=["username"])
     return competition_title_to_rank_members, competition_achievements_df
 
 
