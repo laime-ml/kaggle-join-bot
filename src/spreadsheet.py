@@ -82,3 +82,42 @@ def update_laime_ranking(competition_achievements_df: pl.DataFrame):
             },
         ]
     )
+
+    changed_df = compare_medal(old_df, df)
+    return changed_df
+
+
+def compare_medal(old_df, new_df):
+    # old_df と new_df に出現する username が一致する行のみを残す
+    old_df = old_df.filter(pl.col("username").is_in(new_df.select("username")))
+    new_df = new_df.filter(pl.col("username").is_in(old_df.select("username")))
+
+    assert old_df.shape[0] == new_df.shape[0]
+
+    # 各メダルの数を比較
+    old_df = old_df.sort("username")
+    new_df = new_df.sort("username")
+    # 型をintに合わせ、null の場合は 0 として扱う(old_dfはstrになっている)
+    old_df = old_df.with_columns(
+        [
+            pl.col(col).str.to_integer(strict=False).fill_null(0).alias(col)
+            for col in ["totalGoldMedals", "totalSilverMedals", "totalBronzeMedals"]
+        ]
+    ).with_columns(
+        (pl.col("totalGoldMedals") + pl.col("totalSilverMedals") + pl.col("totalBronzeMedals")).alias("totalMedals")
+    )
+    new_df = new_df.with_columns(
+        [
+            pl.col(col).cast(pl.Int32).fill_null(0).alias(col)
+            for col in ["totalGoldMedals", "totalSilverMedals", "totalBronzeMedals"]
+        ]
+    ).with_columns(
+        (pl.col("totalGoldMedals") + pl.col("totalSilverMedals") + pl.col("totalBronzeMedals")).alias("totalMedals")
+    )
+
+    concat_df = old_df.join(new_df, on="username", how="inner", suffix="_new")
+
+    # メダルの数が変化したユーザーを抽出
+    filter_df = concat_df.filter(pl.col("totalMedals") != pl.col("totalMedals_new"))
+
+    return filter_df

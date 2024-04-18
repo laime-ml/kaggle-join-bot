@@ -2,10 +2,11 @@ import logging
 import os
 
 import polars as pl
-from kaggle_api import extract_competition, extract_kaggle
-from local import load_env
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+
+from kaggle_api import extract_competition, extract_kaggle
+from local import load_env
 from spreadsheet import fetch_account_ids_from_spreadsheet, update_laime_ranking
 
 # ロギングの設定
@@ -38,7 +39,7 @@ def main():
 
     # スプレッドシートからkaggleアカウントを取得
     kaggle_accounts = fetch_account_ids_from_spreadsheet()
-    # kaggle_accounts = kaggle_accounts[:5]
+    # kaggle_accounts = kaggle_accounts[:3]
     logger.info(kaggle_accounts)
 
     # ChromeDriver, kaggle apiを使ってKaggleの情報を取得
@@ -46,10 +47,11 @@ def main():
     competition_dict = extract_competition()
 
     # スプレッドシートに情報を更新
-    update_laime_ranking(competition_achievements_df)
+    changed_df = update_laime_ranking(competition_achievements_df)
+    logger.info(changed_df)
 
     # slack api
-    text = "現在コンペに参加している人の一覧\n"
+    text = "*現在コンペに参加している人の一覧*\n"
     competition_dict = {
         competition_title: v for competition_title, v in sorted(competition_dict.items(), key=lambda x: x[1][2])
     }
@@ -61,6 +63,16 @@ def main():
             for n in rank_members:
                 text += f"{n},  "
             text += "]\n"
+
+    if len(changed_df) > 0:
+        text += "\n\n*メダル獲得者*\n"
+        for row in changed_df.iter_rows(named=True):
+            if row["totalGoldMedals_new"] > row["totalGoldMedals"]:
+                text += f" {row['username']} さんが {row['totalGoldMedals_new']} 枚目の金メダルを獲得しました！\n"
+            if row["totalSilverMedals_new"] > row["totalSilverMedals"]:
+                text += f" {row['username']} さんが {row['totalSilverMedals_new']} 枚目の銀メダルを獲得しました！\n"
+            if row["totalBronzeMedals_new"] > row["totalBronzeMedals"]:
+                text += f" {row['username']} さんが {row['totalBronzeMedals_new']} 枚目の銅メダルを獲得しました！\n"
 
     slack_token = os.environ["SLACK_TOKEN"]
     client = WebClient(token=slack_token)
