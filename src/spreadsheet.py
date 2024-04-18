@@ -52,7 +52,16 @@ def update_laime_ranking(competition_achievements_df: pl.DataFrame):
         "totalSilverMedals",
         "totalBronzeMedals",
     ]
-    df = competition_achievements_df.sort(["rankCurrent", "tier"], nulls_last=True)
+    df = competition_achievements_df.sort(
+        [
+            "rankCurrent",
+            "tier",
+            "totalGoldMedals",
+            "totalSilverMedals",
+            "totalBronzeMedals",
+        ],
+        nulls_last=True,
+    )
     df = df.with_row_index(name="rank", offset=1).select(columns)
 
     client = get_client()
