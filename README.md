@@ -13,24 +13,24 @@
 
   ```
   # apiキーの
-  SHEET_PROJECT_ID
-  SHEET_PRIVATE_KEY_ID
-  SHEET_PRIVATE_KEY
-  SHEET_CLIENT_EMAIL
-  SHEET_CLIENT_ID
-  SHEET_CLIENT_X509_CERT_URL
+  SHEET_PROJECT_ID=xxx
+  SHEET_PRIVATE_KEY_ID=xxx
+  SHEET_PRIVATE_KEY=xxx
+  SHEET_CLIENT_EMAIL=xxx
+  SHEET_CLIENT_ID=xxx
+  SHEET_CLIENT_X509_CERT_URL=xxx
 
   SPREADSHEET_KEY={LAIMEランキングスプレッドシートのURLに記載のID}
 
-  SLACK_TOKENx
-  SLACK_CHANNEL
+  SLACK_TOKEN=xxxx
+  SLACK_CHANNEL=xxx
 
   # kaggle api 用
-  KAGGLE_USERNAME
-  KAGGLE_KEY
+  KAGGLE_USERNAME=xxx
+  KAGGLE_KEY=xxx
 
   # 存在しない場合は "/app/.chromedriver/bin/chromedriver"
-  DRIVER_PATH/yyy
+  DRIVER_PATH=xxx/yyy
   ```
 
 ## ローカル環境構築
