@@ -21,7 +21,6 @@
   SHEET_CLIENT_X509_CERT_URL=xxx
 
   SPREADSHEET_KEY={LAIMEランキングスプレッドシートのURLに記載のID}
-  SPREADSHEET_NAME_1=KaggleRankCurrent
 
   SLACK_TOKEN=xxxx
   SLACK_CHANNEL=xxx
@@ -39,6 +38,14 @@
 1. rye のインストール
 
    - https://rye-up.com/guide/installation/
+
+2. ライブラリのインストール
+
+```
+rye sync
+```
+
+必要に応じて chronium のインストール
 
 ### 実行方法
 

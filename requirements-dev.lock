@@ -180,6 +180,8 @@ pip==24.0
     # via kaggle-join-bot
 platformdirs==4.2.0
     # via jupyter-core
+polars==0.20.21
+    # via kaggle-join-bot
 prometheus-client==0.20.0
     # via jupyter-server
 prompt-toolkit==3.0.43
