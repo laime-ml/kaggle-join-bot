@@ -61,3 +61,47 @@ heroku 上にデプロイ
   ```
   rye run pip freeze > requirements.txt
   ```
+- heroku にloginする
+  ```
+  heroku login
+  ```
+
+- heroku のapplicationを作成する
+  ```
+  heroku create -a application_name
+  ```
+
+- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Buildpacksで下記のURLを追加する
+  - https://github.com/heroku/heroku-buildpack-google-chrome
+  - https://github.com/heroku/heroku-buildpack-chromedriver
+
+- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, COnfig Varsで下記の環境変数を設定する
+  - SHEET_PROJECT_ID
+  - SHEET_PRIVATE_KEY_ID
+  - SHEET_PRIVATE_KEY
+  - SHEET_CLIENT_EMAIL
+  - SHEET_CLIENT_ID
+  - SHEET_CLIENT_X509_CERT_URL
+  - SPREADSHEET_KEY
+  - SPREADSHEET_NAME_1
+  - SLACK_TOKENx
+  - SLACK_CHANNEL
+  - KAGGLE_USERNAME
+  - KAGGLE_KEY
+
+- heroku にdeployする
+  ```
+  git add src/
+  git add requirements.txt
+  git add runtime.txt
+  git commit -m "first commit"
+  git push heroku main
+  ```
+
+- debug
+  ```
+  # local上でもherokuにloginしていれば実行することができる
+  heroku run python src.main.py
+  ```
+
+- heroku applicationで定期実行を設定する

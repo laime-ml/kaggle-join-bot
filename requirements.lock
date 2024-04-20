@@ -68,7 +68,7 @@ requests-oauthlib==2.0.0
     # via google-auth-oauthlib
 rsa==4.9
     # via google-auth
-selenium==4.19.0
+selenium==4.10.0
     # via kaggle-join-bot
 six==1.16.0
     # via bleach
