@@ -16,6 +16,7 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "slack-sdk>=3.27.1",
     "polars>=0.20.21",
+    "tenacity>=8.2.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -40,3 +41,6 @@ packages = ["src/kaggle_join_bot"]
 # ruff の設定
 [tool.ruff]
 line-length = 119
+
+[tool.mypy]
+ignore_missing_imports = true
