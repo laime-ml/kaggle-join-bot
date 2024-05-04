@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 def get_kaggle_users_kaggle_data(ka: str) -> tuple[dict[str, list[str]], list[dict]]:
-    URL = f"https://www.kaggle.com/{ka}/competitions"
     options = webdriver.ChromeOptions()
     options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     driver = webdriver.Chrome(options=options)
@@ -26,7 +25,7 @@ def get_kaggle_users_kaggle_data(ka: str) -> tuple[dict[str, list[str]], list[di
         competition_achievements,
         active_comp_flag,
         achievements_flag,
-    ) = fetch_kaggle_users_kaggle_data(driver, URL, ka)
+    ) = fetch_kaggle_users_kaggle_data(driver, ka)
 
     if not active_comp_flag:
         logger.error(f"not active_comp_flag: {ka}")
@@ -39,10 +38,10 @@ def get_kaggle_users_kaggle_data(ka: str) -> tuple[dict[str, list[str]], list[di
 @retry(stop=stop_after_attempt(4))
 def fetch_kaggle_users_kaggle_data(
     driver,
-    URL,
     ka: str,
 ):
-    retry_cnt = fetch_kaggle_users_kaggle_data.retry.statics["attempt_number"]
+    retry_cnt = fetch_kaggle_users_kaggle_data.retry.statistics["attempt_number"]
+    URL = f"https://www.kaggle.com/{ka}/competitions"
     driver.get(URL)
     sleep(2**retry_cnt)  # 通信環境によっては待ち時間が必要。logsが不完全になることがある
     logs = driver.get_log("performance")
@@ -115,7 +114,7 @@ def fetch_kaggle_users_kaggle_data(
     return competition_title_to_rank_members, competition_achievements, active_comp_flag, achievements_flag
 
 
-def extract_kaggle(kaggleAccounts: list[str]) -> (dict[str, list[str]], pl.DataFrame):
+def extract_kaggle(kaggleAccounts: list[str]) -> tuple[dict[str, list[str]], pl.DataFrame]:
     driver_path = os.getenv("DRIVER_PATH", "/app/.chromedriver/bin/chromedriver")
     service = Service(executable_path=driver_path)
     options = Options()
