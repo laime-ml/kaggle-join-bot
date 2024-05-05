@@ -267,6 +267,8 @@ stack-data==0.6.3
     # via ipython
 strenum==0.4.15
     # via gspread
+tenacity==8.2.3
+    # via kaggle-join-bot
 terminado==0.18.1
     # via jupyter-server
     # via jupyter-server-terminals
