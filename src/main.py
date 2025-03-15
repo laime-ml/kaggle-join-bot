@@ -58,7 +58,7 @@ def main(debug: bool):
     competition_dict = {
         competition_title: v for competition_title, v in sorted(competition_dict.items(), key=lambda x: x[1][2])
     }
-    print(competition_dict)
+
     for competition_title, v in competition_dict.items():
         if competition_title in competition_title_to_rank_members.keys():
             text += f"＊ ＊<{v[4]}|{competition_title}>＊ \n \t(残り{v[2]}日,\t 参加{v[3]}チーム)\n \t\t>>>>\t\t["
