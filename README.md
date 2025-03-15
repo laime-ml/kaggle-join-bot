@@ -58,7 +58,7 @@ heroku 上にデプロイ
 
 - requirements.txt を出力
   ```
-  uv run pip freeze > requirements.txt
+  uv pip freeze > requirements.txt 
   ```
 - heroku にloginする
   ```
