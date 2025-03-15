@@ -1,11 +1,12 @@
+import argparse
 import logging
 import os
 
-import polars as pl
+import click
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from kaggle_api import extract_competition, extract_kaggle
+from kaggle_api import extract_competition, fetch_accounts_info
 from local import load_env
 from spreadsheet import fetch_account_ids_from_spreadsheet, update_laime_ranking
 
@@ -33,17 +34,19 @@ def sort_rank_members(rank_members: list[str]):
     return sorted_list
 
 
-def main():
-    # 環境変数の読み込み
+@click.command()
+@click.option("-d", "--debug", is_flag=True, default=False)
+def main(debug: bool):
     load_env()
 
     # スプレッドシートからkaggleアカウントを取得
     kaggle_accounts = fetch_account_ids_from_spreadsheet()
-    # kaggle_accounts = kaggle_accounts[:3]
+    if debug:
+        kaggle_accounts = kaggle_accounts[:3]
     logger.info(kaggle_accounts)
 
-    # ChromeDriver, kaggle apiを使ってKaggleの情報を取得
-    competition_title_to_rank_members, competition_achievements_df = extract_kaggle(kaggle_accounts)
+    # Kaggleの情報を取得
+    competition_title_to_rank_members, competition_achievements_df = fetch_accounts_info(kaggle_accounts)
     competition_dict = extract_competition()
 
     # スプレッドシートに情報を更新
@@ -55,6 +58,7 @@ def main():
     competition_dict = {
         competition_title: v for competition_title, v in sorted(competition_dict.items(), key=lambda x: x[1][2])
     }
+    print(competition_dict)
     for competition_title, v in competition_dict.items():
         if competition_title in competition_title_to_rank_members.keys():
             text += f"＊ ＊<{v[4]}|{competition_title}>＊ \n \t(残り{v[2]}日,\t 参加{v[3]}チーム)\n \t\t>>>>\t\t["

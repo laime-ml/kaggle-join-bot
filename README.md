@@ -35,22 +35,21 @@
 
 ## ローカル環境構築
 
-1. rye のインストール
-
-   - https://rye-up.com/guide/installation/
+1. uv のインストール
+   - https://docs.astral.sh/uv/getting-started/installation/
 
 2. ライブラリのインストール
 
-```
-rye sync
-```
+    ```sh
+    uv sync
+    ```
 
-必要に応じて chronium のインストール
+3. 必要に応じて chromedriver のインストール & .envのDRIVER_PATHを書き換え
+    - https://googlechromelabs.github.io/chrome-for-testing/#stable
 
 ### 実行方法
-
-```
-rye run python src/main.py
+```sh
+uv run python src/main.py
 ```
 
 ## デプロイ
@@ -59,7 +58,7 @@ heroku 上にデプロイ
 
 - requirements.txt を出力
   ```
-  rye run pip freeze > requirements.txt
+  uv run pip freeze > requirements.txt
   ```
 - heroku にloginする
   ```

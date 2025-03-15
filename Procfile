@@ -1,1 +1,1 @@
-web: rye run python src/main.py
+web: uv run python src/main.py
