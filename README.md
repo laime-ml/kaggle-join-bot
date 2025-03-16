@@ -114,7 +114,7 @@ heroku 上にデプロイ
 
 - heroku にdeployする
   ```
-  # コミット
+  # コミット後 heroku にpush
   git push heroku main
   ```
 
