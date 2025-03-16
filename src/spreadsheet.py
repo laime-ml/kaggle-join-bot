@@ -25,7 +25,7 @@ def get_client():
         "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
         "client_x509_cert_url": os.environ["SHEET_CLIENT_X509_CERT_URL"],
     }
-
+    print(json_acct_info)
     credentials = service_account.Credentials.from_service_account_info(json_acct_info, scopes=scope)
     client = gspread.authorize(credentials)
     return client
