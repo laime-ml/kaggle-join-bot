@@ -2,13 +2,11 @@ import json
 import logging
 import os
 from collections import defaultdict
-from datetime import datetime
 from time import sleep
 
 import polars as pl
 from kaggle import KaggleApi
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from tenacity import retry, stop_after_attempt
 from tqdm.auto import tqdm
@@ -58,7 +56,6 @@ def fetch_kaggle_users_kaggle_data(
     driver,
     ka: str,
 ):
-    print(f"{fetch_kaggle_users_kaggle_data.retry.statistics}")
     retry_cnt = fetch_kaggle_users_kaggle_data.retry.statistics.get("attempt_number", 0)
     URL = f"https://www.kaggle.com/{ka}/competitions"
     driver.get(URL)
@@ -159,18 +156,17 @@ def fetch_accounts_info(kaggleAccounts: list[str]) -> tuple[dict[str, list[str]]
     return competition_title_to_rank_members, competition_achievements_df
 
 
-def extract_competition():
+def fetch_award_competitions() -> list:
     # Kaggle APIの定義
     api = KaggleApi()
     api.authenticate()
 
     competitions_list = api.competitions_list()
-    competition_dict = {}
 
-    for com in competitions_list:
-        reward = com.reward
-        if "Usd" in reward:
-            d = com.deadline - datetime.now()
-            competition_dict[com.title] = [com.ref[com.ref.rfind("/") + 1 :], reward, d.days, com.team_count, com.url]
+    # ポイントが付与されるコンペのみを抽出
+    competitions_list = [com for com in competitions_list if com.awards_points]
 
-    return competition_dict
+    # deadlineでソート
+    competitions_list.sort(key=lambda x: x.deadline)
+
+    return competitions_list
