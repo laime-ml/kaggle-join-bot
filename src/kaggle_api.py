@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def create_driver() -> webdriver.Chrome:
-    driver_path = os.getenv("DRIVER_PATH", "/app/.chromedriver/bin/chromedriver")
+    driver_path = os.getenv("DRIVER_PATH", "/app/.chrome-for-testing/chromedriver-linux64/chromedriver")
     print(f"{driver_path=}")
     service = Service(executable_path=driver_path)
     options = webdriver.ChromeOptions()
