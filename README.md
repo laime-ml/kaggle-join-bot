@@ -105,9 +105,12 @@ heroku 上にデプロイ
 
   まとめてセットする場合はスペースを含む SHEET_PRIVATE_KEY などを削除してから.envの内容をセットできる。SHEET_PRIVATE_KEYは上記の方法でセット
   ```sh
-  heroku config:set $(grep -vE '^\s*(#|$)' .env | sed 's/\\n/\\\\n/g' | paste -sd " " -)
-  heroku config:set SLACK_CHANNEL='30_kaggle共有' DRIVER_PATH="/app/.chrome-for-testing/chromedriver-linux64/chromedriver"
+  heroku config:set $(grep -vE '^\s*(#|$)' .env | xargs)
   ```
+
+  改行をセットするときは \n が \\n にエスケープされてしまうので、複数行のままコピペする。
+
+  DRIVER_PATHも `/app/.chrome-for-testing/chromedriver-linux64/chromedriver` にセット
 
 - heroku にdeployする
   ```
@@ -122,6 +125,7 @@ heroku 上にデプロイ
   ```
 
 - heroku applicationで定期実行を設定する
+  heroku scheduler は1日単位での定期実行しかできないので、曜日ごとに実行するかどうかを判定するスクリプトを噛ませる
   ```
-  python src/main.py
+  bash run.py
   ```
