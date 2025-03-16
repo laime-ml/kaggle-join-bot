@@ -56,10 +56,17 @@ uv run python src/main.py
 
 heroku 上にデプロイ
 
+- heroku登録＆クレカ登録
+
+- heroku CLI のインストール
+
 - requirements.txt を出力
   ```
+  uv sync --no-dev
   uv pip freeze > requirements.txt 
+  uv sync # 必要に応じて戻す
   ```
+
 - heroku にloginする
   ```
   heroku login
@@ -67,14 +74,19 @@ heroku 上にデプロイ
 
 - heroku のapplicationを作成する
   ```
-  heroku create -a application_name
+  APPLICATION_NAME={application_name}
+  heroku create $APPLICATION_NAME
   ```
 
 - herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Buildpacksで下記のURLを追加する
-  - https://github.com/heroku/heroku-buildpack-google-chrome
-  - https://github.com/heroku/heroku-buildpack-chromedriver
+  ```
+  heroku addons:create scheduler:standard --app $APPLICATION_NAME
 
-- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, COnfig Varsで下記の環境変数を設定する
+  # https://github.com/heroku/heroku-buildpack-chrome-for-testing
+  heroku buildpacks:add -i 1 heroku-community/chrome-for-testing --app $APPLICATION_NAME
+  ```
+
+- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Config Varsで下記の環境変数を設定する
   - SHEET_PROJECT_ID
   - SHEET_PRIVATE_KEY_ID
   - SHEET_PRIVATE_KEY
@@ -88,19 +100,25 @@ heroku 上にデプロイ
   - KAGGLE_USERNAME
   - KAGGLE_KEY
 
+  まとめてセットする場合はスペースを含むSHEET_PRIVATE_KEYを削除してから.envの内容をセットできる。SHEET_PRIVATE_KEYは上記の方法でセット
+  ```sh
+  heroku config:set $(grep -vE '^\s*(#|$)' .env | sed 's/\\n/\\\\n/g' | paste -sd " " -)
+  heroku config:set SLACK_CHANNEL='30_kaggle共有' DRIVER_PATH="/app/.chrome-for-testing/chromedriver-linux64/chromedriver"
+  ```
+
 - heroku にdeployする
   ```
-  git add src/
-  git add requirements.txt
-  git add runtime.txt
-  git commit -m "first commit"
+  # コミット
   git push heroku main
   ```
 
 - debug
   ```
   # local上でもherokuにloginしていれば実行することができる
-  heroku run python src.main.py
+  heroku run python src/main.py
   ```
 
 - heroku applicationで定期実行を設定する
+  ```
+  python src/main.py
+  ```
