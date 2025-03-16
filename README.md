@@ -35,32 +35,38 @@
 
 ## ローカル環境構築
 
-1. rye のインストール
-
-   - https://rye-up.com/guide/installation/
+1. uv のインストール
+   - https://docs.astral.sh/uv/getting-started/installation/
 
 2. ライブラリのインストール
 
-```
-rye sync
-```
+    ```sh
+    uv sync
+    ```
 
-必要に応じて chronium のインストール
+3. 必要に応じて chromedriver のインストール & .envのDRIVER_PATHを書き換え
+    - https://googlechromelabs.github.io/chrome-for-testing/#stable
 
 ### 実行方法
-
-```
-rye run python src/main.py
+```sh
+uv run python src/main.py
 ```
 
 ## デプロイ
 
 heroku 上にデプロイ
 
+- heroku登録＆クレカ登録
+
+- heroku CLI のインストール
+
 - requirements.txt を出力
   ```
-  rye run pip freeze > requirements.txt
+  uv sync --no-dev
+  uv pip freeze > requirements.txt 
+  uv sync # 必要に応じて戻す
   ```
+
 - heroku にloginする
   ```
   heroku login
@@ -68,14 +74,22 @@ heroku 上にデプロイ
 
 - heroku のapplicationを作成する
   ```
-  heroku create -a application_name
+  APPLICATION_NAME={application_name}
+  heroku create $APPLICATION_NAME
   ```
 
 - herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Buildpacksで下記のURLを追加する
-  - https://github.com/heroku/heroku-buildpack-google-chrome
-  - https://github.com/heroku/heroku-buildpack-chromedriver
+  ```
+  heroku addons:create scheduler:standard --app $APPLICATION_NAME
 
-- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, COnfig Varsで下記の環境変数を設定する
+  # https://github.com/heroku/heroku-buildpack-chrome-for-testing
+  heroku buildpacks:add -i 1 heroku-community/chrome-for-testing --app $APPLICATION_NAME
+
+  # python環境: https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python
+  heroku buildpacks:add https://github.com/heroku/heroku-buildpack-python.git
+  ```
+
+- herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Config Varsで下記の環境変数を設定する
   - SHEET_PROJECT_ID
   - SHEET_PRIVATE_KEY_ID
   - SHEET_PRIVATE_KEY
@@ -89,19 +103,29 @@ heroku 上にデプロイ
   - KAGGLE_USERNAME
   - KAGGLE_KEY
 
+  まとめてセットする場合はスペースを含む SHEET_PRIVATE_KEY などを削除してから.envの内容をセットできる。SHEET_PRIVATE_KEYは上記の方法でセット
+  ```sh
+  heroku config:set $(grep -vE '^\s*(#|$)' .env | xargs)
+  ```
+
+  改行をセットするときは \n が \\n にエスケープされてしまうので、複数行のままコピペする。
+
+  DRIVER_PATHも `/app/.chrome-for-testing/chromedriver-linux64/chromedriver` にセット
+
 - heroku にdeployする
   ```
-  git add src/
-  git add requirements.txt
-  git add runtime.txt
-  git commit -m "first commit"
+  # コミット後 heroku にpush
   git push heroku main
   ```
 
 - debug
   ```
   # local上でもherokuにloginしていれば実行することができる
-  heroku run python src.main.py
+  heroku run python src/main.py
   ```
 
 - heroku applicationで定期実行を設定する
+  heroku scheduler は1日単位での定期実行しかできないので、曜日ごとに実行するかどうかを判定するスクリプトを噛ませる
+  ```
+  bash run.sh
+  ```

@@ -2,45 +2,24 @@
 name = "kaggle-join-bot"
 version = "0.1.0"
 description = "Add your description here"
-authors = [
-    { name = "unonao", email = "naokiuno634@gmail.com" }
-]
-dependencies = [
-    "beautifulsoup4>=4.12.3",
-    "pip>=24.0",
-    "selenium>=4.10.0",
-    "kaggle>=1.6.8",
-    "numpy>=1.26.4",
-    "gspread>=6.1.0",
-    "google-auth>=2.29.0",
-    "python-dotenv>=1.0.1",
-    "slack-sdk>=3.27.1",
-    "polars>=0.20.21",
-    "tenacity>=8.2.3",
-]
 readme = "README.md"
-requires-python = ">= 3.8"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.rye]
-managed = true
-dev-dependencies = [
-    "jupyterlab>=4.1.5",
-    "ruff>=0.3.4",
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.13.3",
+    "click>=8.1.8",
+    "google-auth>=2.38.0",
+    "gspread>=6.2.0",
+    "kaggle>=1.7.4.2",
+    "numpy>=2.2.3",
+    "polars>=1.25.1",
+    "python-dotenv>=1.0.1",
+    "selenium>=4.29.0",
+    "slack-sdk>=3.34.0",
+    "tenacity>=9.0.0",
 ]
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/kaggle_join_bot"]
-
-# ruff の設定
-[tool.ruff]
-line-length = 119
-
-[tool.mypy]
-ignore_missing_imports = true
+[tool.uv]
+dev-dependencies = [
+    "jupyterlab>=4.3.6",
+    "ruff>=0.11.0",
+]

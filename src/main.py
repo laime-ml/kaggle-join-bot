@@ -1,11 +1,12 @@
 import logging
 import os
+from datetime import datetime
 
-import polars as pl
+import click
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 
-from kaggle_api import extract_competition, extract_kaggle
+from kaggle_api import fetch_accounts_info, fetch_award_competitions
 from local import load_env
 from spreadsheet import fetch_account_ids_from_spreadsheet, update_laime_ranking
 
@@ -33,46 +34,50 @@ def sort_rank_members(rank_members: list[str]):
     return sorted_list
 
 
-def main():
-    # 環境変数の読み込み
+@click.command()
+@click.option("-d", "--debug", is_flag=True, default=False)
+def main(debug: bool):
     load_env()
 
     # スプレッドシートからkaggleアカウントを取得
     kaggle_accounts = fetch_account_ids_from_spreadsheet()
-    # kaggle_accounts = kaggle_accounts[:3]
+    if debug:
+        kaggle_accounts = kaggle_accounts[:3]
     logger.info(kaggle_accounts)
 
-    # ChromeDriver, kaggle apiを使ってKaggleの情報を取得
-    competition_title_to_rank_members, competition_achievements_df = extract_kaggle(kaggle_accounts)
-    competition_dict = extract_competition()
+    # Kaggleの情報を取得
+    competition_title_to_rank_members, competition_achievements_df = fetch_accounts_info(kaggle_accounts)
+    competitions_list = fetch_award_competitions()
 
     # スプレッドシートに情報を更新
     changed_df = update_laime_ranking(competition_achievements_df)
     logger.info(changed_df)
 
     # slack api
-    text = "*現在コンペに参加している人の一覧*\n"
-    competition_dict = {
-        competition_title: v for competition_title, v in sorted(competition_dict.items(), key=lambda x: x[1][2])
-    }
-    for competition_title, v in competition_dict.items():
-        if competition_title in competition_title_to_rank_members.keys():
-            text += f"＊ ＊<{v[4]}|{competition_title}>＊ \n \t(残り{v[2]}日,\t 参加{v[3]}チーム)\n \t\t>>>>\t\t["
-            rank_members = competition_title_to_rank_members[competition_title]
-            rank_members = sort_rank_members(rank_members)
-            for n in rank_members:
-                text += f"{n},  "
-            text += "]\n"
-
+    text_list = [
+        "*現在コンペに参加している人の一覧*",
+    ]
+    for com in competitions_list:
+        if com.title in competition_title_to_rank_members.keys():
+            remain_days = (com.deadline - datetime.now()).days
+            text_list.extend(
+                [
+                    f"＊ ＊<{com.url}|{com.title}>＊ \n \t(残り{remain_days}日,\t 参加{com.team_count}チーム)",
+                    f"\t\t>>>>\t\t[{', '.join(sort_rank_members(competition_title_to_rank_members[com.title]))}]",
+                ]
+            )
     if len(changed_df) > 0:
-        text += "\n\n*メダル獲得者*\n"
+        text_list.append("\n\n*メダル獲得者*")
         for row in changed_df.iter_rows(named=True):
-            if row["totalGoldMedals_new"] > row["totalGoldMedals"]:
-                text += f" {row['username']} さんが {row['totalGoldMedals_new']} 枚目の金メダルを獲得しました！\n"
-            if row["totalSilverMedals_new"] > row["totalSilverMedals"]:
-                text += f" {row['username']} さんが {row['totalSilverMedals_new']} 枚目の銀メダルを獲得しました！\n"
-            if row["totalBronzeMedals_new"] > row["totalBronzeMedals"]:
-                text += f" {row['username']} さんが {row['totalBronzeMedals_new']} 枚目の銅メダルを獲得しました！\n"
+            for medal in ["Gold", "Silver", "Bronze"]:
+                if row[f"total{medal}Medals_new"] > row[f"total{medal}Medals"]:
+                    text_list.append(
+                        f" {row['username']} さんが {row[f'total{medal}Medals_new']} 枚目の{medal}メダルを獲得しました！"
+                    )
+    text_list.append(
+        "\n\n<https://docs.google.com/spreadsheets/d/1W9lXy62Ed6EkwfDWFRGxzkWA2iqzz9M73UfRC_1qdiI/edit#gid=1003970766|LAIMEランキング>"
+    )
+    text = "\n".join(text_list)
 
     slack_token = os.environ["SLACK_TOKEN"]
     client = WebClient(token=slack_token)
