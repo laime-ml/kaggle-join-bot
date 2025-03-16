@@ -84,6 +84,9 @@ heroku 上にデプロイ
 
   # https://github.com/heroku/heroku-buildpack-chrome-for-testing
   heroku buildpacks:add -i 1 heroku-community/chrome-for-testing --app $APPLICATION_NAME
+
+  # python環境: https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-python
+  heroku buildpacks:add https://github.com/heroku/heroku-buildpack-python.git
   ```
 
 - herokuのapplicationページ(https://dashboard.heroku.com/apps), Settings, Config Varsで下記の環境変数を設定する
@@ -100,7 +103,7 @@ heroku 上にデプロイ
   - KAGGLE_USERNAME
   - KAGGLE_KEY
 
-  まとめてセットする場合はスペースを含むSHEET_PRIVATE_KEYを削除してから.envの内容をセットできる。SHEET_PRIVATE_KEYは上記の方法でセット
+  まとめてセットする場合はスペースを含む SHEET_PRIVATE_KEY などを削除してから.envの内容をセットできる。SHEET_PRIVATE_KEYは上記の方法でセット
   ```sh
   heroku config:set $(grep -vE '^\s*(#|$)' .env | sed 's/\\n/\\\\n/g' | paste -sd " " -)
   heroku config:set SLACK_CHANNEL='30_kaggle共有' DRIVER_PATH="/app/.chrome-for-testing/chromedriver-linux64/chromedriver"
