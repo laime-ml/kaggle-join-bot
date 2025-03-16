@@ -3,7 +3,6 @@ import logging
 import os
 import time
 from collections import defaultdict
-from time import sleep
 
 import polars as pl
 from kaggle import KaggleApi
