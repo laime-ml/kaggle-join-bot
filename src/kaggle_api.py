@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from collections import defaultdict
 from time import sleep
 
@@ -51,16 +52,29 @@ def get_kaggle_users_kaggle_data(driver: webdriver.Chrome, ka: str) -> tuple[dic
     return competition_title_to_rank, competition_achievements
 
 
-@retry(stop=stop_after_attempt(4))
+def get_logs(driver, timeout=20, interval=1.0):
+    """
+    指定したtimeout秒以内に、get_log("performance") が空のリストを返すまで待機する。
+    通信が継続している場合はログが発生し続けるため、空リストが返るまで待機する。
+    """
+    all_logs = []
+    end_time = time.time() + timeout
+    while time.time() < end_time:
+        logs = driver.get_log("performance")
+        all_logs.extend(logs)
+        time.sleep(interval)
+    return all_logs
+
+
+@retry(stop=stop_after_attempt(5))
 def fetch_kaggle_users_kaggle_data(
     driver,
     ka: str,
 ):
-    retry_cnt = fetch_kaggle_users_kaggle_data.retry.statistics.get("attempt_number", 0)
+    retry_cnt = fetch_kaggle_users_kaggle_data.statistics["attempt_number"]
     URL = f"https://www.kaggle.com/{ka}/competitions"
     driver.get(URL)
-    sleep(2**retry_cnt)  # 通信環境によっては待ち時間が必要。logsが不完全になることがある
-    network_logs = driver.get_log("performance")
+    network_logs = get_logs(driver)
 
     competition_title_to_rank: dict[str, str] = defaultdict(list)
     competition_achievements: list[dict] = []
@@ -157,7 +171,6 @@ def fetch_accounts_info(kaggleAccounts: list[str]) -> tuple[dict[str, list[str]]
 
 
 def fetch_award_competitions() -> list:
-    # Kaggle APIの定義
     api = KaggleApi()
     api.authenticate()
 
