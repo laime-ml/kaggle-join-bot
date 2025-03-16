@@ -127,5 +127,5 @@ heroku 上にデプロイ
 - heroku applicationで定期実行を設定する
   heroku scheduler は1日単位での定期実行しかできないので、曜日ごとに実行するかどうかを判定するスクリプトを噛ませる
   ```
-  bash run.py
+  bash run.sh
   ```
